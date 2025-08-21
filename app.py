@@ -19,14 +19,20 @@ def run_agent(prompt, agent_type):
         "fintech": "openai/gpt-4",
         "support": "openai/gpt-4",
         "payment": "openai/gpt-4",
-        "credit": "openai/gpt-4"
+        "credit": "openai/gpt-4",
+        "faq": "openai/gpt-4",
+        "sales": "openai/gpt-4",
+        "hiring": "openai/gpt-4"
     }
 
     role_map = {
-        "fintech": "You are a senior Fintech Data Analyst.",
-        "support": "You are a customer support summarizer.",
-        "payment": "You are a payment auditor for finance operations.",
-        "credit": "You are a Credit Scoring and Lending Advisor AI. Analyze applicant data and return smart loan decisions, especially considering financial inclusion."
+        "fintech": "You are a senior Fintech Data Analyst. Analyze market trends and give insights.",
+        "support": "You are a support ticket summarizer. Extract key points and sentiment.",
+        "payment": "You are a payments manager. Understand and respond to billing-related issues.",
+        "credit": "You are a credit advisor. Analyze applicant data and give lending advice.",
+        "faq": "You are a friendly Customer Support FAQ Bot. Answer user questions using known FAQ-style responses. Avoid making things up.",
+        "sales": "You are a sales conversion agent. Respond persuasively but politely. Convert leads. Handle discounts softly. Escalate if needed.",
+        "hiring": "You are a hiring screening agent. Score candidates against job descriptions as Strong Fit, Moderate Fit, or Poor Fit. Justify clearly in 2–3 bullet points.",
     }
 
     payload = {
@@ -47,7 +53,10 @@ def run_agent(prompt, agent_type):
     try:
         print("🔍 Sending request to OpenRouter...")
         response = requests.post(
-            "https://openrouter.ai/api/v1/chat/completions", headers=headers, json=payload)
+            "https://openrouter.ai/api/v1/chat/completions",
+            headers=headers,
+            json=payload
+        )
         response.raise_for_status()
         print("✅ Response received")
         return response.json()["choices"][0]["message"]["content"]
@@ -72,14 +81,31 @@ def index():
             prompt = f"""Analyze the following payment records and detect failed, duplicate or refund-needed transactions:\n{user_input}"""
         elif agent == "credit":
             prompt = f"""Analyze the following credit applicant profile and provide:
-            - A risk level (Low, Moderate, or High)
-            - Recommended loan decision (Approve / Partial / Decline)
-            - Suggested loan limit
-            - Rationale for decision (especially considering financial inclusion)
+- A risk level (Low, Moderate, or High)
+- Recommended loan decision (Approve / Partial / Decline)
+- Suggested loan limit
+- Rationale for decision (especially considering financial inclusion)
 
-            Applicant Info:
-            {user_input}
-            """
+Applicant Info:
+{user_input}
+"""
+        elif agent == "faq":
+            prompt = user_input
+        elif agent == "sales":
+            prompt = (
+                f"Customer said: {user_input}\n\n"
+                f"Respond as a sales agent aiming to close the sale. Be professional, persuasive, and helpful. Handle discount negotiations tactfully."
+            )
+        elif agent == "hiring":
+            parts = user_input.split("Candidate:")
+            job_desc = parts[0].strip() if len(parts) > 0 else ""
+            resume = parts[1].strip() if len(parts) > 1 else ""
+            prompt = (
+                f"Job Description:\n{job_desc}\n\n"
+                f"Candidate Resume:\n{resume}\n\n"
+                f"Evaluate if this candidate is a good fit for the job. Return one of: Strong Fit, Moderate Fit, or Poor Fit.\n"
+                f"Then justify the rating in 2–3 bullet points."
+            )
         else:
             prompt = user_input
 
