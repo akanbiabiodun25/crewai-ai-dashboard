@@ -42,7 +42,7 @@ def run_agent(prompt, agent_type):
             {"role": "user", "content": prompt}
         ],
         "temperature": 0.5,
-        "max_tokens": 200
+        "max_tokens": 100
     }
 
     headers = {
