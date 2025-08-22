@@ -1,11 +1,36 @@
 import os
-import requests
+import io
+import pytesseract
+import pdfplumber
+import speech_recognition as sr
 from dotenv import load_dotenv
 from flask import Flask, request, render_template
-import webbrowser
+import requests
+from werkzeug.utils import secure_filename
+from PIL import Image
 
 load_dotenv()
+
 app = Flask(__name__)
+app.config["UPLOAD_FOLDER"] = "uploads"
+os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
+
+
+def extract_text_from_pdf(file_stream):
+    with pdfplumber.open(file_stream) as pdf:
+        return "\n".join([page.extract_text() for page in pdf.pages if page.extract_text()])
+
+
+def extract_text_from_image(image_file):
+    image = Image.open(image_file)
+    return pytesseract.image_to_string(image)
+
+
+def transcribe_audio(audio_file):
+    recognizer = sr.Recognizer()
+    with sr.AudioFile(audio_file) as source:
+        audio = recognizer.record(source)
+    return recognizer.recognize_google(audio)
 
 
 def run_agent(prompt, agent_type):
@@ -39,14 +64,14 @@ def run_agent(prompt, agent_type):
         "faq": "You are a friendly Customer Support FAQ Bot. Answer user questions using known FAQ-style responses. Avoid making things up.",
         "sales": "You are a sales conversion agent. Respond persuasively but politely. Convert leads. Handle discounts softly. Escalate if needed.",
         "hiring": "You are a hiring screening agent. Score candidates against job descriptions as Strong Fit, Moderate Fit, or Poor Fit. Justify clearly in 2–3 bullet points.",
-        "regulatory": "You are a regulatory compliance officer. Check input for legal or compliance risks.",
-        "portfolio": "You are an investment advisor. Suggest portfolio allocation based on user goals, risk tolerance, and capital.",
-        "onboarding": "You are a customer onboarding assistant. Review user data and return a checklist of missing or invalid KYC information.",
-        "monitor": "You are a transaction monitoring agent. Detect abnormal patterns, spikes, and suspicious activities.",
-        "reporter": "You are a business intelligence assistant. Generate a clean executive summary or HTML report from raw input data.",
-        "leadgen": "You are a lead generation assistant. Extract warm leads and summarize their interests.",
-        "fraud": "You are a fraud detection agent. Detect suspicious activities and provide reasons.",
-        "closer": "You are an account closure assistant. Check if the closure request is valid and list any required actions."
+        "regulatory": "You are a regulatory compliance officer. Identify legal or policy risks in the financial domain.",
+        "portfolio": "You are an investment portfolio recommender. Suggest optimal strategies and allocations.",
+        "onboarding": "You are a customer onboarding specialist. Explain features and resolve new user questions.",
+        "monitor": "You are a transaction monitoring agent. Flag unusual, failed or duplicate activities.",
+        "reporter": "You are a business intelligence reporter. Generate an executive summary from financial or customer data.",
+        "leadgen": "You are a lead generation bot. Qualify potential clients and propose offers.",
+        "fraud": "You are a fraud detection bot. Find fraud signals or abuse patterns from input.",
+        "closer": "You are an account closure assistant. Guide the customer empathetically and resolve final concerns."
     }
 
     payload = {
@@ -56,7 +81,7 @@ def run_agent(prompt, agent_type):
             {"role": "user", "content": prompt}
         ],
         "temperature": 0.5,
-        "max_tokens": 400
+        "max_tokens": 300
     }
 
     headers = {
@@ -81,9 +106,28 @@ def run_agent(prompt, agent_type):
 def index():
     result = ""
     if request.method == "POST":
-        agent = request.form["agent"]
-        user_input = request.form["user_input"]
+        agent = request.form.get("agent")
+        user_input = request.form.get("user_input", "")
 
+        # Priority: Audio > Image > File > Text
+        if "audio_file" in request.files and request.files["audio_file"].filename:
+            audio_file = request.files["audio_file"]
+            filename = secure_filename(audio_file.filename)
+            path = os.path.join(app.config["UPLOAD_FOLDER"], filename)
+            audio_file.save(path)
+            user_input = transcribe_audio(path)
+        elif "image_file" in request.files and request.files["image_file"].filename:
+            image_file = request.files["image_file"]
+            user_input = extract_text_from_image(image_file)
+        elif "text_file" in request.files and request.files["text_file"].filename:
+            text_file = request.files["text_file"]
+            filename = text_file.filename
+            if filename.endswith(".pdf"):
+                user_input = extract_text_from_pdf(text_file)
+            else:
+                user_input = text_file.read().decode("utf-8")
+
+        # Define agent-specific prompts
         if agent == "fintech":
             prompt = f"Analyze market trends and financial data related to: {user_input}. Provide 5 key insights."
         elif agent == "support":
@@ -92,35 +136,10 @@ def index():
             prompt = f"Analyze the following payment records and detect failed, duplicate or refund-needed transactions:\n{user_input}"
         elif agent == "credit":
             prompt = f"""Analyze the following credit applicant profile and provide:
-- A risk level (Low, Moderate, or High)
-- Recommended loan decision (Approve / Partial / Decline)
-- Suggested loan limit
-- Rationale for decision (especially considering financial inclusion)
-
-Applicant Info:
-{user_input}"""
-        elif agent == "faq":
-            prompt = user_input
-        elif agent == "sales":
-            prompt = f"Sales inquiry:\n{user_input}\nCraft a persuasive response to convert them, handling any objections kindly."
-        elif agent == "hiring":
-            prompt = f"Review the following resume or application:\n{user_input}\nReturn fit score and justification."
-        elif agent == "regulatory":
-            prompt = f"Review this company or financial data for compliance issues:\n{user_input}"
-        elif agent == "portfolio":
-            prompt = f"Suggest an investment portfolio based on this user's profile:\n{user_input}"
-        elif agent == "onboarding":
-            prompt = f"Analyze this KYC form for missing or invalid information:\n{user_input}"
-        elif agent == "monitor":
-            prompt = f"Review the following transaction log and detect:\n- Unusual activity\n- Potential fraud or AML red flags\n{user_input}"
-        elif agent == "reporter":
-            prompt = f"Summarize the following operational data into a business report:\n{user_input}"
-        elif agent == "leadgen":
-            prompt = f"Analyze this content to extract potential leads:\n{user_input}"
-        elif agent == "fraud":
-            prompt = f"Detect any fraudulent behavior in this data:\n{user_input}"
-        elif agent == "closer":
-            prompt = f"Analyze this account closure request:\n{user_input}\nReturn next steps, if any."
+            - Risk level (Low / Moderate / High)
+            - Lending decision (Approve / Partial / Decline)
+            - Recommended loan amount
+            - Rationale considering financial inclusion\n\n{user_input}"""
         else:
             prompt = user_input
 
@@ -130,5 +149,4 @@ Applicant Info:
 
 
 if __name__ == "__main__":
-    webbrowser.open("http://127.0.0.1:5000")
     app.run(debug=True)

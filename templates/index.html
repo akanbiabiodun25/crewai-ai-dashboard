@@ -10,10 +10,10 @@
 <body class="bg-light">
     <div class="container py-5">
         <h2 class="text-center mb-4">🤖 AI Agent Dashboard</h2>
-        <form method="post" class="bg-white p-4 rounded shadow-sm">
+        <form method="post" enctype="multipart/form-data" class="bg-white p-4 rounded shadow-sm">
             <div class="mb-3">
                 <label class="form-label">Choose Agent:</label>
-                <select name="agent" class="form-select">
+                <select name="agent" class="form-select" required>
                     <option value="fintech">Fintech Analyst</option>
                     <option value="support">Support Bot</option>
                     <option value="payment">Payment Manager</option>
@@ -31,10 +31,28 @@
                     <option value="closer">Account Closure</option>
                 </select>
             </div>
+
             <div class="mb-3">
-                <label class="form-label">Paste your input:</label>
-                <textarea name="user_input" class="form-control" rows="6" required></textarea>
+                <label class="form-label">📝 Type your input:</label>
+                <textarea name="user_input" class="form-control" rows="6"
+                    placeholder="Or upload a file below..."></textarea>
             </div>
+
+            <div class="mb-3">
+                <label class="form-label">🎤 Upload voice (.wav only):</label>
+                <input type="file" name="audio_file" accept=".wav" class="form-control">
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">📄 Upload document (.pdf or .txt):</label>
+                <input type="file" name="text_file" accept=".pdf,.txt" class="form-control">
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">🖼️ Upload image with text (.png or .jpg):</label>
+                <input type="file" name="image_file" accept=".png,.jpg,.jpeg" class="form-control">
+            </div>
+
             <button type="submit" class="btn btn-primary w-100">Run Agent</button>
         </form>
 
