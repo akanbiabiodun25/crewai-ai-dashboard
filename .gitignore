@@ -1,3 +1,19 @@
 .env
 __pycache__/
 .DS_Store
+# Ignore Python cache
+__pycache__/
+*.pyc
+
+# Ignore uploads
+uploads/
+
+# Ignore env and credentials
+.env
+
+# Ignore OS-specific files
+.DS_Store
+Thumbs.db
+
+# Ignore debug settings
+*.log
