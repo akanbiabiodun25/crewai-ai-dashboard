@@ -1,83 +1,49 @@
-<!-- templates/index.html -->
-
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
     <meta charset="UTF-8">
-    <title>🧠 AI Agent Dashboard</title>
+    <title>AI Agent Dashboard</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        body {
-            background-color: #f8f9fa;
-        }
-
-        .agent-card {
-            background: white;
-            padding: 2rem;
-            border-radius: 12px;
-            box-shadow: 0 0 15px rgba(0, 0, 0, 0.05);
-        }
-
-        .agent-header {
-            font-size: 2rem;
-            font-weight: bold;
-            margin-bottom: 1.5rem;
-            color: #343a40;
-        }
-
-        .btn-run {
-            width: 100%;
-        }
-
-        .result-box {
-            white-space: pre-wrap;
-            background-color: #e9ecef;
-            padding: 1rem;
-            border-radius: 8px;
-            margin-top: 1rem;
-        }
-    </style>
 </head>
 
-<body>
+<body class="bg-light">
     <div class="container py-5">
-        <div class="row justify-content-center">
-            <div class="col-md-8 agent-card">
-                <div class="agent-header text-center">🧠 AI Agent Dashboard</div>
-
-                <form method="POST">
-                    <div class="mb-3">
-                        <label for="agent" class="form-label">Choose Agent</label>
-                        <select name="agent" id="agent" class="form-select">
-                            <option value="fintech">Fintech Analyst</option>
-                            <option value="support">Support Bot</option>
-                            <option value="payment">Payment Manager</option>
-                            <option value="credit">Credit Advisor</option>
-                            <option value="faq">FAQ Bot</option>
-                            <option value="sales">Sales Closer Agent</option>
-                            <option value="hiring">Hiring Funnel Agent</option>
-                            <!-- Add more here -->
-                        </select>
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="user_input" class="form-label">Paste your input</label>
-                        <textarea name="user_input" id="user_input" rows="6" class="form-control"
-                            placeholder="Enter your request or data here..."></textarea>
-                    </div>
-
-                    <button type="submit" class="btn btn-primary btn-run">🚀 Run Agent</button>
-                </form>
-
-                {% if result %}
-                <div class="mt-4">
-                    <h5>AI Output:</h5>
-                    <div class="result-box">{{ result }}</div>
-                </div>
-                {% endif %}
+        <h2 class="text-center mb-4">🤖 AI Agent Dashboard</h2>
+        <form method="post" class="bg-white p-4 rounded shadow-sm">
+            <div class="mb-3">
+                <label class="form-label">Choose Agent:</label>
+                <select name="agent" class="form-select">
+                    <option value="fintech">Fintech Analyst</option>
+                    <option value="support">Support Bot</option>
+                    <option value="payment">Payment Manager</option>
+                    <option value="credit">Credit Advisor</option>
+                    <option value="faq">FAQ Bot</option>
+                    <option value="sales">Sales Closer</option>
+                    <option value="hiring">Hiring Funnel</option>
+                    <option value="regulatory">Compliance Officer</option>
+                    <option value="portfolio">Portfolio Recommender</option>
+                    <option value="onboarding">Customer Onboarding</option>
+                    <option value="monitor">Transaction Monitor</option>
+                    <option value="reporter">Business Reporter</option>
+                    <option value="leadgen">Lead Generator</option>
+                    <option value="fraud">Fraud Detector</option>
+                    <option value="closer">Account Closure</option>
+                </select>
             </div>
+            <div class="mb-3">
+                <label class="form-label">Paste your input:</label>
+                <textarea name="user_input" class="form-control" rows="6" required></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary w-100">Run Agent</button>
+        </form>
+
+        {% if result %}
+        <div class="alert alert-success mt-4" role="alert">
+            <h5 class="alert-heading">AI Output:</h5>
+            <pre>{{ result }}</pre>
         </div>
+        {% endif %}
     </div>
 </body>
 
