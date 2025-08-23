@@ -10,6 +10,6 @@ pytesseract
 Pillow
 pdfplumber
 SpeechRecognition
-PyAudio
+#PyAudio
 
 
