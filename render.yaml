@@ -5,5 +5,5 @@ services:
     buildCommand: pip install -r requirements.txt
     startCommand: gunicorn app:app
     envVars:
-      - key: OPENROUTER_API_KEY
-        value: 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
+  - key: OPENROUTER_API_KEY
+    fromEnvVar: OPENROUTER_API_KEY
