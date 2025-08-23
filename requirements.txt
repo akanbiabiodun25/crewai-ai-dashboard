@@ -1,8 +1,8 @@
 #Flask==3.0.3
 #requests==2.32.3
 #python-dotenv==1.1.1
-#gunicorn==21.2.0
-
+gunicorn==21.2.0
+gunicorn
 Flask
 requests
 python-dotenv
