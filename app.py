@@ -46,6 +46,7 @@ def run_agent(prompt, agent_type):
         "faq": "openai/gpt-4",
         "sales": "openai/gpt-4",
         "hiring": "openai/gpt-4",
+        "bpa": "openai/gpt-4",
         "regulatory": "openai/gpt-4",
         "portfolio": "openai/gpt-4",
         "onboarding": "openai/gpt-4",
@@ -64,14 +65,15 @@ def run_agent(prompt, agent_type):
         "faq": "You are a friendly Customer Support FAQ Bot. Answer user questions using known FAQ-style responses. Avoid making things up.",
         "sales": "You are a sales conversion agent. Respond persuasively but politely. Convert leads. Handle discounts softly. Escalate if needed.",
         "hiring": "You are a hiring screening agent. Score candidates against job descriptions as Strong Fit, Moderate Fit, or Poor Fit. Justify clearly in 2–3 bullet points.",
-        "regulatory": "You are a regulatory compliance officer. Identify legal or policy risks in the financial domain.",
-        "portfolio": "You are an investment portfolio recommender. Suggest optimal strategies and allocations.",
-        "onboarding": "You are a customer onboarding specialist. Explain features and resolve new user questions.",
-        "monitor": "You are a transaction monitoring agent. Flag unusual, failed or duplicate activities.",
-        "reporter": "You are a business intelligence reporter. Generate an executive summary from financial or customer data.",
-        "leadgen": "You are a lead generation bot. Qualify potential clients and propose offers.",
-        "fraud": "You are a fraud detection bot. Find fraud signals or abuse patterns from input.",
-        "closer": "You are an account closure assistant. Guide the customer empathetically and resolve final concerns."
+        "bpa": "You are a business process automation expert. Analyze workflows, detect bottlenecks, and suggest automation opportunities.",
+        "regulatory": "You are a compliance officer. Review actions and flag any regulatory violations.",
+        "portfolio": "You are an investment advisor. Recommend portfolio strategies based on financial goals.",
+        "onboarding": "You are a customer onboarding specialist. Provide a step-by-step onboarding guide based on input.",
+        "monitor": "You are a transaction monitoring agent. Flag anomalies or unusual patterns from transaction data.",
+        "reporter": "You are a business reporter. Generate professional summaries based on company activity.",
+        "leadgen": "You are a lead generation specialist. Extract potential leads and classify them by interest.",
+        "fraud": "You are a fraud detection agent. Analyze behavior and data to flag potential fraud risk.",
+        "closer": "You are an account closure assistant. Assist users in safely and clearly closing accounts."
     }
 
     payload = {
@@ -81,7 +83,7 @@ def run_agent(prompt, agent_type):
             {"role": "user", "content": prompt}
         ],
         "temperature": 0.5,
-        "max_tokens": 300
+        "max_tokens": 115
     }
 
     headers = {
@@ -127,7 +129,7 @@ def index():
             else:
                 user_input = text_file.read().decode("utf-8")
 
-        # Define agent-specific prompts
+        # Agent-specific prompts
         if agent == "fintech":
             prompt = f"Analyze market trends and financial data related to: {user_input}. Provide 5 key insights."
         elif agent == "support":
@@ -140,6 +142,30 @@ def index():
             - Lending decision (Approve / Partial / Decline)
             - Recommended loan amount
             - Rationale considering financial inclusion\n\n{user_input}"""
+        elif agent == "faq":
+            prompt = user_input
+        elif agent == "sales":
+            prompt = f"""You're handling a potential customer conversation:\n\n{user_input}\n\nRespond persuasively, handle objections, and aim to close the deal. Mention discounts gently if requested."""
+        elif agent == "hiring":
+            prompt = f"""Evaluate the following candidate against the job requirements.\n\n{user_input}\n\nGive a short screening summary and rate as Strong Fit, Moderate Fit, or Poor Fit."""
+        elif agent == "bpa":
+            prompt = f"""Analyze the following workflow or business process and suggest how it can be optimized or automated:\n{user_input}\nInclude clear steps and tools to use."""
+        elif agent == "regulatory":
+            prompt = f"""Check for regulatory compliance issues in the following case:\n{user_input}\nList any concerns and violations."""
+        elif agent == "portfolio":
+            prompt = f"""Given the following client profile or scenario:\n{user_input}\nRecommend an optimal investment portfolio and rationale."""
+        elif agent == "onboarding":
+            prompt = f"""Design a customer onboarding journey for this input:\n{user_input}\nInclude email sequences, documentation, and success checkpoints."""
+        elif agent == "monitor":
+            prompt = f"""Analyze these transactions:\n{user_input}\nFlag any anomalies, suspicious activities, or irregular patterns."""
+        elif agent == "reporter":
+            prompt = f"""Write a business report summary for the following content:\n{user_input}\nUse clear, formal tone suitable for leadership review."""
+        elif agent == "leadgen":
+            prompt = f"""From the following text or data:\n{user_input}\nExtract qualified leads with name, interest level, and next follow-up step."""
+        elif agent == "fraud":
+            prompt = f"""Analyze the following behavior and flag if it's potentially fraudulent:\n{user_input}\nGive clear reasoning."""
+        elif agent == "closer":
+            prompt = f"""Assist this customer in closing their account safely and clearly:\n{user_input}\nList key steps and next actions."""
         else:
             prompt = user_input
 
