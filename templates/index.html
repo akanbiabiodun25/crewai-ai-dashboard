@@ -39,6 +39,7 @@
         <h2 class="mb-4 text-center">🤖 AI Agent Dashboard</h2>
 
         <form method="post" enctype="multipart/form-data" class="bg-white p-4 rounded shadow-sm">
+
             <div class="mb-3">
                 <label class="form-label">Choose Agent:</label>
                 <select name="agent" class="form-select" required>
@@ -49,7 +50,7 @@
                     <option value="faq">FAQ Bot</option>
                     <option value="sales">Sales Closer</option>
                     <option value="hiring">Hiring Funnel</option>
-                    <option value="bpa">Process Optimizer</option>
+                    <option value="bpa">Process Optimizer (BPA)</option>
                     <option value="regulatory">Compliance Officer</option>
                     <option value="portfolio">Portfolio Recommender</option>
                     <option value="onboarding">Customer Onboarding</option>
@@ -64,26 +65,28 @@
             <div class="mb-3">
                 <label class="form-label"> Type your input:</label>
                 <textarea name="user_input" class="form-control" rows="6"
-                    placeholder="Enter your query or text here..."></textarea>
+                    placeholder="Type or paste text here..."></textarea>
             </div>
 
             <div class="mb-3">
                 <label class="form-label"> Upload Voice (.wav):</label>
-                <input type="file" name="audio_file" accept=".wav" class="form-control">
+                <input type="file" name="audio_file" accept=".wav" class="form-control bg-light border-primary">
             </div>
 
             <div class="mb-3">
                 <label class="form-label"> Upload Document (.pdf, .txt):</label>
-                <input type="file" name="text_file" accept=".pdf,.txt" class="form-control">
+                <input type="file" name="text_file" accept=".pdf,.txt" class="form-control bg-light border-success">
             </div>
 
             <div class="mb-3">
                 <label class="form-label"> Upload Image (.png, .jpg, .jpeg):</label>
-                <input type="file" name="image_file" accept=".png,.jpg,.jpeg" class="form-control">
+                <input type="file" name="image_file" accept=".png,.jpg,.jpeg" class="form-control bg-light border-info">
             </div>
 
-            <button type="submit" class="btn btn-primary w-100">🚀 Run Agent</button>
+            <button type="submit" class="btn btn-primary w-100 fw-bold">🚀 Run Agent</button>
+
         </form>
+
 
         {% if result %}
         <div class="mt-4">
