@@ -8,7 +8,9 @@ from flask import Flask, request, render_template
 import requests
 from werkzeug.utils import secure_filename
 from PIL import Image
+from datetime import datetime
 
+# Load API key from .env
 load_dotenv()
 
 app = Flask(__name__)
@@ -16,6 +18,7 @@ app.config["UPLOAD_FOLDER"] = "uploads"
 os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
 
 
+# === Utilities ===
 def extract_text_from_pdf(file_stream):
     with pdfplumber.open(file_stream) as pdf:
         return "\n".join([page.extract_text() for page in pdf.pages if page.extract_text()])
@@ -33,28 +36,29 @@ def transcribe_audio(audio_file):
     return recognizer.recognize_google(audio)
 
 
+# === Main AI Agent Runner ===
 def run_agent(prompt, agent_type):
-    api_key = os.getenv("OPENROUTER_API_KEY")
+    api_key = os.getenv("GROK_API_KEY")  # <- Using Grok key
     if not api_key:
-        return "❌ ERROR: OPENROUTER_API_KEY not found in .env"
+        return "❌ ERROR: GROK_API_KEY not found in .env"
 
     model_map = {
-        "fintech": "openai/gpt-4",
-        "support": "openai/gpt-4",
-        "payment": "openai/gpt-4",
-        "credit": "openai/gpt-4",
-        "faq": "openai/gpt-4",
-        "sales": "openai/gpt-4",
-        "hiring": "openai/gpt-4",
-        "bpa": "openai/gpt-4",
-        "regulatory": "openai/gpt-4",
-        "portfolio": "openai/gpt-4",
-        "onboarding": "openai/gpt-4",
-        "monitor": "openai/gpt-4",
-        "reporter": "openai/gpt-4",
-        "leadgen": "openai/gpt-4",
-        "fraud": "openai/gpt-4",
-        "closer": "openai/gpt-4"
+        "fintech": "grok-4-0709",
+        "support": "grok-4-0709",
+        "payment": "grok-4-0709",
+        "credit": "grok-4-0709",
+        "faq": "grok-4-0709",
+        "sales": "grok-4-0709",
+        "hiring": "grok-4-0709",
+        "bpa": "grok-4-0709",
+        "regulatory": "grok-4-0709",
+        "portfolio": "grok-4-0709",
+        "onboarding": "grok-4-0709",
+        "monitor": "grok-4-0709",
+        "reporter": "grok-4-0709",
+        "leadgen": "grok-4-0709",
+        "fraud": "grok-4-0709",
+        "closer": "grok-4-0709"
     }
 
     role_map = {
@@ -77,13 +81,13 @@ def run_agent(prompt, agent_type):
     }
 
     payload = {
-        "model": model_map.get(agent_type, "openai/gpt-4"),
+        "model": model_map.get(agent_type, "grok-4-0709"),
         "messages": [
             {"role": "system", "content": role_map.get(agent_type)},
             {"role": "user", "content": prompt}
         ],
         "temperature": 0.5,
-        "max_tokens": 115
+        "max_tokens": 500
     }
 
     headers = {
@@ -92,9 +96,9 @@ def run_agent(prompt, agent_type):
     }
 
     try:
-        print("🔍 Sending request to OpenRouter...")
+        print("🔍 Sending request to Grok...")
         response = requests.post(
-            "https://openrouter.ai/api/v1/chat/completions", headers=headers, json=payload)
+            "https://api.x.ai/v1/chat/completions", headers=headers, json=payload)
         response.raise_for_status()
         print("✅ Response received")
         return response.json()["choices"][0]["message"]["content"]
@@ -104,6 +108,7 @@ def run_agent(prompt, agent_type):
         return f"❌ Unexpected error: {err}"
 
 
+# === Flask Route ===
 @app.route("/", methods=["GET", "POST"])
 def index():
     result = ""
@@ -129,7 +134,7 @@ def index():
             else:
                 user_input = text_file.read().decode("utf-8")
 
-        # Agent-specific prompts
+        # Prompt Generation
         if agent == "fintech":
             prompt = f"Analyze market trends and financial data related to: {user_input}. Provide 5 key insights."
         elif agent == "support":
@@ -138,10 +143,10 @@ def index():
             prompt = f"Analyze the following payment records and detect failed, duplicate or refund-needed transactions:\n{user_input}"
         elif agent == "credit":
             prompt = f"""Analyze the following credit applicant profile and provide:
-            - Risk level (Low / Moderate / High)
-            - Lending decision (Approve / Partial / Decline)
-            - Recommended loan amount
-            - Rationale considering financial inclusion\n\n{user_input}"""
+- Risk level (Low / Moderate / High)
+- Lending decision (Approve / Partial / Decline)
+- Recommended loan amount
+- Rationale considering financial inclusion\n\n{user_input}"""
         elif agent == "faq":
             prompt = user_input
         elif agent == "sales":
@@ -171,8 +176,9 @@ def index():
 
         result = run_agent(prompt, agent)
 
-    return render_template("index.html", result=result)
+    return render_template("index.html", result=result, year=datetime.now().year)
 
 
+# === Run Local Dev Server ===
 if __name__ == "__main__":
     app.run(debug=True)
